@@ -28,8 +28,23 @@ function showView(viewId) {
   document.getElementById(viewId).style.display = 'block';
 }
 
+function getApiBaseUrl() {
+  if (typeof window !== 'undefined' && window.VITE_API_URL) {
+    return window.VITE_API_URL.replace(/\/+$/, '');
+  }
+  if (
+    typeof window !== 'undefined' &&
+    window.location &&
+    window.location.hostname &&
+    window.location.hostname.includes('onrender.com')
+  ) {
+    return 'https://pillsync-care.onrender.com';
+  }
+  return 'http://localhost:8000';
+}
+
 async function handleLogin() {
-  const email = document.getElementById('email').value;
+  const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
   const errorMsg = document.getElementById('errorMsg');
 
@@ -42,28 +57,42 @@ async function handleLogin() {
   console.log('Attempting login with:', email, 'as role:', selectedRole);
 
   try {
-    const response = await fetch('/api/v1/auth/login/', {
+    const baseUrl = getApiBaseUrl();
+    const formData = new URLSearchParams();
+    formData.append('username', email);
+    formData.append('password', password);
+
+    const response = await fetch(`${baseUrl}/auth/login`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: JSON.stringify({ email, password }),
+      body: formData.toString(),
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      errorMsg.textContent = errorData.detail || errorData?.error?.message || 'Login failed.';
+      let message = 'Login failed.';
+      try {
+        const errorData = await response.json();
+        message = errorData.detail || errorData?.error?.message || errorData?.message || message;
+      } catch {
+        // Keep default message if response body cannot be parsed as JSON
+      }
+      errorMsg.textContent = message;
       return;
     }
 
     const data = await response.json();
-    localStorage.setItem('access_token', data.access);
-    if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
+    const token = data.access_token || data.access;
+    localStorage.setItem('access_token', token);
+    if (data.refresh_token || data.refresh) {
+      localStorage.setItem('refresh_token', data.refresh_token || data.refresh);
+    }
 
     // Fetch the real user role from the backend, then redirect accordingly.
     try {
-      const meRes = await fetch('/api/v1/users/me/', {
-        headers: { Authorization: `Bearer ${data.access}` },
+      const meRes = await fetch(`${baseUrl}/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (meRes.ok) {
         const me = await meRes.json();
@@ -82,9 +111,9 @@ async function handleLogin() {
     }
 
     // Fallback: use the UI-selected role
-    if (selectedRole === 'CAREGIVER') {
+    if (selectedRole.toUpperCase() === 'CAREGIVER') {
       window.location.href = 'caregiver-dashboard.html';
-    } else if (selectedRole === 'ADMIN') {
+    } else if (selectedRole.toUpperCase() === 'ADMIN') {
       window.location.href = 'admin-dashboard.html';
     } else {
       window.location.href = 'dashboard.html';
@@ -116,12 +145,12 @@ async function handleSignup() {
       errorMsg.textContent = "Please enter the patient's email to link.";
       return;
     }
-    // We would link patientEmail here based on further API design, for now we just proceed with role
   }
   errorMsg.textContent = '';
 
   try {
-    const response = await fetch('/api/v1/auth/register/', {
+    const baseUrl = getApiBaseUrl();
+    const response = await fetch(`${baseUrl}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -130,14 +159,12 @@ async function handleSignup() {
         full_name: name,
         email: email,
         password: password,
-        password_confirm: confirm,
-        role: selectedSignupRole,
+        role: selectedSignupRole.toLowerCase(),
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      // Backend returns { error: { message, details } } for validation errors
       const details = errorData?.error?.details;
       if (details) {
         const firstError = Object.values(details)[0];
@@ -167,4 +194,13 @@ function handleForgotPassword() {
   }
   errorMsg.textContent = '';
   alert('If this email exists, a reset link has been sent.');
+}
+
+if (typeof window !== 'undefined') {
+  window.selectRole = selectRole;
+  window.selectSignupRole = selectSignupRole;
+  window.showView = showView;
+  window.handleLogin = handleLogin;
+  window.handleSignup = handleSignup;
+  window.handleForgotPassword = handleForgotPassword;
 }

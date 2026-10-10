@@ -7,7 +7,15 @@ let todayData = { slots: {}, summary: {} };
 let myMedicines = [];
 let activeCategory = 'All';
 
-const BASE = '/api/v1';
+const BASE =
+  typeof window !== 'undefined' && window.VITE_API_URL
+    ? `${window.VITE_API_URL.replace(/\/+$/, '')}/api/v1`
+    : typeof window !== 'undefined' &&
+        window.location &&
+        window.location.hostname &&
+        window.location.hostname.includes('onrender.com')
+      ? 'https://pillsync-care.onrender.com/api/v1'
+      : '/api/v1';
 
 const categoryColors = {
   BLOOD_PRESSURE: '#D97B5B',

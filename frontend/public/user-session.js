@@ -16,6 +16,21 @@ function getGreetingPrefix() {
   }
 }
 
+function getSessionApiBaseUrl() {
+  if (typeof window !== 'undefined' && window.VITE_API_URL) {
+    return window.VITE_API_URL.replace(/\/+$/, '');
+  }
+  if (
+    typeof window !== 'undefined' &&
+    window.location &&
+    window.location.hostname &&
+    window.location.hostname.includes('onrender.com')
+  ) {
+    return 'https://pillsync-care.onrender.com';
+  }
+  return '';
+}
+
 async function loadUserProfileHeader() {
   const token = localStorage.getItem('access_token');
   if (!token) {
@@ -27,7 +42,8 @@ async function loadUserProfileHeader() {
   }
 
   try {
-    const response = await fetch('/api/v1/users/me/', {
+    const baseUrl = getSessionApiBaseUrl();
+    const response = await fetch(`${baseUrl}/api/v1/users/me/`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -108,7 +124,8 @@ async function loadUserProfileHeader() {
 
     // Fetch patient profile details for modal & caregiver
     try {
-      const pRes = await fetch('/api/v1/profiles/patients/me/', {
+      const baseUrl = getSessionApiBaseUrl();
+      const pRes = await fetch(`${baseUrl}/api/v1/profiles/patients/me/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (pRes.ok) {
@@ -127,12 +144,13 @@ async function loadUserProfileHeader() {
         if (p.emergency_contacts && p.emergency_contacts.length > 0) {
           const ec = p.emergency_contacts[0];
           if (el('modalEmName')) el('modalEmName').textContent = ec.name;
-          if (el('modalEmRel')) el('modalEmRel').textContent = ec.relationship_display || ec.relationship;
+          if (el('modalEmRel'))
+            el('modalEmRel').textContent = ec.relationship_display || ec.relationship;
           if (el('modalEmPhone')) el('modalEmPhone').textContent = ec.phone_number;
           if (el('caregiverName')) el('caregiverName').textContent = ec.name;
         }
       }
-    } catch (_pErr) {
+    } catch {
       // Ignore if no patient profile
     }
 

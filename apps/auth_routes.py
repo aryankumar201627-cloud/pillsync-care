@@ -10,6 +10,7 @@ from apps.dependencies import get_current_user
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@router.post("/register/", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
     # Check if user already exists
     existing_user = db.query(User).filter(User.email == user_data.email).first()
@@ -35,6 +36,7 @@ def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 @router.post("/login", response_model=Token)
+@router.post("/login/", response_model=Token)
 def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
@@ -55,5 +57,6 @@ def login_user(
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/me", response_model=UserOut)
+@router.get("/me/", response_model=UserOut)
 def get_current_user_profile(current_user: User = Depends(get_current_user)):
     return current_user
