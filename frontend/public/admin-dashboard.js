@@ -7,7 +7,29 @@ let allUsers = [];
 let activeRoleFilter = 'All';
 let searchTerm = '';
 
-const BASE = '/api/v1';
+function getApiBaseUrl() {
+  const envUrl =
+    (typeof window !== 'undefined' &&
+      (window.API_BASE_URL || window.VITE_API_URL || window.VITE_API_BASE_URL)) ||
+    '';
+  if (envUrl) {
+    const trimmed = envUrl.replace(/\/+$/, '');
+    if (trimmed.endsWith('/api/v1')) return trimmed;
+    if (trimmed.endsWith('/api')) return `${trimmed}/v1`;
+    return `${trimmed}/api/v1`;
+  }
+  if (
+    typeof window !== 'undefined' &&
+    window.location &&
+    window.location.hostname &&
+    window.location.hostname.includes('onrender.com')
+  ) {
+    return 'https://pillsync-care.onrender.com/api/v1';
+  }
+  return 'http://localhost:8000/api/v1';
+}
+
+const BASE = getApiBaseUrl();
 
 // ── Sidebar profile (admin-only guard) ────────────────────────────────────────
 async function loadAdminSidebar() {
@@ -68,10 +90,10 @@ async function loadUsers() {
       status: u.is_active ? 'active' : 'inactive',
       joined: u.date_joined
         ? new Date(u.date_joined).toLocaleDateString('en-IN', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-          })
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })
         : '—',
     }));
 

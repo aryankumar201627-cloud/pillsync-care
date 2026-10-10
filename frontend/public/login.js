@@ -197,6 +197,7 @@ function handleForgotPassword() {
 }
 
 if (typeof window !== 'undefined') {
+  window.getApiBaseUrl = getApiBaseUrl;
   window.selectRole = selectRole;
   window.selectSignupRole = selectSignupRole;
   window.showView = showView;

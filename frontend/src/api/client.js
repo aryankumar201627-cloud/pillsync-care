@@ -5,9 +5,9 @@ export const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
   (typeof window !== 'undefined' &&
-  window.location &&
-  window.location.hostname &&
-  window.location.hostname.includes('onrender.com')
+    window.location &&
+    window.location.hostname &&
+    window.location.hostname.includes('onrender.com')
     ? 'https://pillsync-care.onrender.com'
     : 'http://localhost:8000');
 

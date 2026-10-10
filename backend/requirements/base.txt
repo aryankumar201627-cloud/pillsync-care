@@ -35,7 +35,7 @@ fastapi
 pydantic
 sqlalchemy
 apscheduler
-passlib[bcrypt]
+bcrypt
 python-jose[cryptography]
 email-validator
 

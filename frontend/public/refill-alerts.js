@@ -203,14 +203,13 @@ function renderAll() {
             <div class="r-detail">${med.dosage} · ${med.total_quantity} tablets left</div>
             <div class="stock-bar-track"><div class="stock-bar-fill" style="width:${Math.min(100, Math.round((med.total_quantity / med.fullSupply) * 100))}%; background:${med.status === 'urgent' ? '#E11D48' : med.status === 'upcoming' ? '#D97706' : '#0D9488'};"></div></div>
             <div class="r-days-line">${med.daysLeft} day${med.daysLeft === 1 ? '' : 's'} left · refill by ${med.eta}</div>
-            ${
-              med.status !== 'ok'
-                ? `<button class="request-btn ${alreadyRequested ? 'requested' : ''}"
+            ${med.status !== 'ok'
+              ? `<button class="request-btn ${alreadyRequested ? 'requested' : ''}"
                     ${alreadyRequested ? 'disabled' : ''}
                     onclick="requestRefill(${med.id}, '${med.name}', this)">
                     ${alreadyRequested ? '✓ Requested' : 'Request Refill'}
                   </button>`
-                : ''
+              : ''
             }
           </div>
         `;

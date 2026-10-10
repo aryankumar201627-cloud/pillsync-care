@@ -3,11 +3,35 @@ let medicines = [];
 
 const medColorPalette = ['#00C2A8', '#7C6AF5', '#FF6B6B', '#E9C46A', '#4ECDC4', '#D97B5B'];
 
+function getApiBaseUrl() {
+  const envUrl =
+    (typeof window !== 'undefined' &&
+      (window.API_BASE_URL || window.VITE_API_URL || window.VITE_API_BASE_URL)) ||
+    '';
+  if (envUrl) {
+    const trimmed = envUrl.replace(/\/+$/, '');
+    if (trimmed.endsWith('/api/v1')) return trimmed;
+    if (trimmed.endsWith('/api')) return `${trimmed}/v1`;
+    return `${trimmed}/api/v1`;
+  }
+  if (
+    typeof window !== 'undefined' &&
+    window.location &&
+    window.location.hostname &&
+    window.location.hostname.includes('onrender.com')
+  ) {
+    return 'https://pillsync-care.onrender.com/api/v1';
+  }
+  return 'http://localhost:8000/api/v1';
+}
+
+const BASE_URL = getApiBaseUrl();
+
 async function loadLiveDoseAnalysis() {
   const token = localStorage.getItem('access_token');
   if (!token) return;
   try {
-    const res = await fetch('/api/v1/medicines/', {
+    const res = await fetch(`${BASE_URL}/medicines/`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (res.ok) {

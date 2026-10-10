@@ -29,15 +29,17 @@ export default defineConfig(({ mode }) => {
         configureServer(server) {
           server.middlewares.use('/config.js', (_req, res) => {
             const devUrl = process.env.VITE_API_URL || env.VITE_API_URL || 'http://localhost:8000';
+            const devBase = devUrl.replace(/\/+$/, '') + (devUrl.includes('/api/v1') ? '' : '/api/v1');
             res.setHeader('Content-Type', 'application/javascript');
-            res.end(`window.VITE_API_URL = ${JSON.stringify(devUrl)};\n`);
+            res.end(`window.VITE_API_URL = ${JSON.stringify(devUrl)};\nwindow.API_BASE_URL = ${JSON.stringify(devBase)};\n`);
           });
         },
         generateBundle() {
+          const prodBase = apiUrl.replace(/\/+$/, '') + (apiUrl.includes('/api/v1') ? '' : '/api/v1');
           this.emitFile({
             type: 'asset',
             fileName: 'config.js',
-            source: `// Dynamically generated at build time from VITE_API_URL\nwindow.VITE_API_URL = ${JSON.stringify(apiUrl)};\n`,
+            source: `// Dynamically generated at build time from VITE_API_URL\nwindow.VITE_API_URL = ${JSON.stringify(apiUrl)};\nwindow.API_BASE_URL = ${JSON.stringify(prodBase)};\n`,
           });
         },
       },

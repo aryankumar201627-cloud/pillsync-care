@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
-from passlib.context import CryptContext
+import bcrypt
 from jose import jwt
 from dotenv import load_dotenv
 
@@ -10,28 +10,22 @@ SECRET_KEY = os.getenv("SECRET_KEY", "super-secret-key-change-this-in-production
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
-try:
-    import bcrypt
-    _HAS_BCRYPT = True
-except ImportError:
-    _HAS_BCRYPT = False
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
-    if _HAS_BCRYPT:
-        pwd_bytes = password[:72].encode("utf-8")
-        return bcrypt.hashpw(pwd_bytes, bcrypt.gensalt()).decode("utf-8")
-    return pwd_context.hash(password)
+    pwd_bytes = password.encode("utf-8")[:72]
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    if _HAS_BCRYPT:
-        try:
-            return bcrypt.checkpw(plain_password[:72].encode("utf-8"), hashed_password.encode("utf-8"))
-        except Exception:
-            pass
     try:
-        return pwd_context.verify(plain_password, hashed_password)
+        pwd_bytes = plain_password.encode("utf-8")[:72]
+        hashed_bytes = (
+            hashed_password.encode("utf-8")
+            if isinstance(hashed_password, str)
+            else hashed_password
+        )
+        return bcrypt.checkpw(pwd_bytes, hashed_bytes)
     except Exception:
         return False
 

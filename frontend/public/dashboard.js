@@ -11,9 +11,9 @@ const BASE =
   typeof window !== 'undefined' && window.VITE_API_URL
     ? `${window.VITE_API_URL.replace(/\/+$/, '')}/api/v1`
     : typeof window !== 'undefined' &&
-        window.location &&
-        window.location.hostname &&
-        window.location.hostname.includes('onrender.com')
+      window.location &&
+      window.location.hostname &&
+      window.location.hostname.includes('onrender.com')
       ? 'https://pillsync-care.onrender.com/api/v1'
       : '/api/v1';
 
@@ -282,14 +282,13 @@ function renderDoseChip(dose, container) {
     <div class="med-name">${dose.medicine_name}</div>
     ${dose.medicine_strength ? `<div class="med-strength">${dose.medicine_strength}</div>` : ''}
     ${statusLabel}
-    ${
-      !resolved
-        ? `
+    ${!resolved
+      ? `
     <div class="dose-actions">
       <button class="take-btn" id="btn-taken-${dose.id}" onclick="markDose('${dose.id}', 'taken')">Taken</button>
       <button class="miss-btn" id="btn-missed-${dose.id}" onclick="markDose('${dose.id}', 'missed')">Missed</button>
     </div>`
-        : ''
+      : ''
     }
   `;
 

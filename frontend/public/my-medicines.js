@@ -20,6 +20,30 @@ const categoryColors = {
   OTHER: '#8A8578',
 };
 
+function getApiBaseUrl() {
+  const envUrl =
+    (typeof window !== 'undefined' &&
+      (window.API_BASE_URL || window.VITE_API_URL || window.VITE_API_BASE_URL)) ||
+    '';
+  if (envUrl) {
+    const trimmed = envUrl.replace(/\/+$/, '');
+    if (trimmed.endsWith('/api/v1')) return trimmed;
+    if (trimmed.endsWith('/api')) return `${trimmed}/v1`;
+    return `${trimmed}/api/v1`;
+  }
+  if (
+    typeof window !== 'undefined' &&
+    window.location &&
+    window.location.hostname &&
+    window.location.hostname.includes('onrender.com')
+  ) {
+    return 'https://pillsync-care.onrender.com/api/v1';
+  }
+  return 'http://localhost:8000/api/v1';
+}
+
+const BASE_URL = getApiBaseUrl();
+
 async function fetchMedicines() {
   const token = localStorage.getItem('access_token');
   if (!token) {
@@ -29,7 +53,7 @@ async function fetchMedicines() {
   }
 
   try {
-    const response = await fetch('/api/v1/medicines/', {
+    const response = await fetch(`${BASE_URL}/medicines/`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -90,7 +114,7 @@ async function deleteMedicine(id) {
   }
 
   try {
-    const res = await fetch(`/api/v1/medicines/${id}/`, {
+    const res = await fetch(`${BASE_URL}/medicines/${id}/`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });

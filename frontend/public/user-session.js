@@ -17,8 +17,15 @@ function getGreetingPrefix() {
 }
 
 function getSessionApiBaseUrl() {
-  if (typeof window !== 'undefined' && window.VITE_API_URL) {
-    return window.VITE_API_URL.replace(/\/+$/, '');
+  const envUrl =
+    (typeof window !== 'undefined' &&
+      (window.API_BASE_URL || window.VITE_API_URL || window.VITE_API_BASE_URL)) ||
+    '';
+  if (envUrl) {
+    const trimmed = envUrl.replace(/\/+$/, '');
+    if (trimmed.endsWith('/api/v1')) return trimmed;
+    if (trimmed.endsWith('/api')) return `${trimmed}/v1`;
+    return `${trimmed}/api/v1`;
   }
   if (
     typeof window !== 'undefined' &&
@@ -26,16 +33,20 @@ function getSessionApiBaseUrl() {
     window.location.hostname &&
     window.location.hostname.includes('onrender.com')
   ) {
-    return 'https://pillsync-care.onrender.com';
+    return 'https://pillsync-care.onrender.com/api/v1';
   }
-  return '';
+  return 'http://localhost:8000/api/v1';
+}
+
+if (typeof window !== 'undefined') {
+  window.getSessionApiBaseUrl = getSessionApiBaseUrl;
 }
 
 async function loadUserProfileHeader() {
   const token = localStorage.getItem('access_token');
   if (!token) {
     // If not logged in and on a protected page, redirect to login
-    if (!window.location.pathname.endsWith('login.html')) {
+    if (window.location && window.location.pathname && !window.location.pathname.endsWith('login.html')) {
       window.location.href = 'login.html';
     }
     return null;
@@ -43,7 +54,7 @@ async function loadUserProfileHeader() {
 
   try {
     const baseUrl = getSessionApiBaseUrl();
-    const response = await fetch(`${baseUrl}/api/v1/users/me/`, {
+    const response = await fetch(`${baseUrl}/users/me/`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -125,7 +136,7 @@ async function loadUserProfileHeader() {
     // Fetch patient profile details for modal & caregiver
     try {
       const baseUrl = getSessionApiBaseUrl();
-      const pRes = await fetch(`${baseUrl}/api/v1/profiles/patients/me/`, {
+      const pRes = await fetch(`${baseUrl}/profiles/patients/me/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (pRes.ok) {

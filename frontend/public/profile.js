@@ -29,7 +29,7 @@ async function fetchLiveProfile() {
 
     if (profileRes.status === 'fulfilled' && profileRes.value.ok) {
       currentPatientData = await profileRes.value.json();
-      
+
       // Blood Group
       const bg = currentPatientData.blood_group || '—';
       if (el('fBlood-view')) el('fBlood-view').textContent = bg;

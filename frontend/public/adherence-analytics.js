@@ -35,7 +35,7 @@ async function loadLiveAdherenceData() {
         // Compute day of week stats
         const dayBuckets = { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [] };
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        
+
         daysList.forEach((d) => {
           if (d.date) {
             const dayIdx = new Date(d.date).getDay();
