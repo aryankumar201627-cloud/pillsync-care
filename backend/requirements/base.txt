@@ -52,3 +52,4 @@ opencv-python-headless==4.11.0.86
 # firebase-admin==6.6.0
 # twilio==9.4.1
 # sendgrid==6.11.0
+python-multipart
